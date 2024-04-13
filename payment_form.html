@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            text-align: center;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        h1 {
+            color: #333333;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Payment Form</h1>
+        <form id="paymentForm">
+            <label for="amount">Amount:</label>
+            <input type="text" id="amount" name="amount" required><br><br>
+            <label for="phone">Phone Number:</label>
+            <input type="text" id="phone" name="phone" required><br><br>
+            <button type="submit">Submit Payment</button>
+        </form>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var form = event.target;
+            var formData = new FormData(form);
+
+            fetch('http://127.0.0.1:5000/process_payment', {
+                method: 'POST',
+                body: JSON.stringify({
+                    amount: formData.get('amount'),
+                    phone_number: formData.get('phone')
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                var responseDiv = document.getElementById('response');
+                if (data.success) {
+                    // Payment Successful
+                    responseDiv.innerHTML = '';
+                    var paymentSuccessHTML = `
+                        <div class="success">
+                            <h2>Payment Successful</h2>
+                            <p>Your payment has been processed successfully.</p>
+                        </div>
+                    `;
+                    responseDiv.innerHTML = paymentSuccessHTML;
+                } else {
+                    // Payment Failed
+                    responseDiv.innerHTML = '';
+                    var paymentFailedHTML = `
+                        <div class="error">
+                            <h2>Payment Failed</h2>
+                            <p>Sorry, your payment could not be processed.</p>
+                        </div>
+                    `;
+                    responseDiv.innerHTML = paymentFailedHTML;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                var responseDiv = document.getElementById('response');
+                responseDiv.innerHTML = '';
+                var paymentErrorHTML = `
+                    <div class="error">
+                        <h2>Error</h2>
+                        <p>An error occurred while processing the payment.</p>
+                    </div>
+                `;
+                responseDiv.innerHTML = paymentErrorHTML;
+            });
+        });
+    </script>
+</body>
+</html>
